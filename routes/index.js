@@ -74,10 +74,12 @@ exports.installDb = function(req, res) {
       
       db.save(zips);
        
-      db.createIndex([
+      
+      db.ensureIndex([
           {"zip" : 1},
           {"loc" :"2d"}
         ]);
+      
       
       res.render('install', {title: 'US Zip Database Installed'});
       

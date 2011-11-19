@@ -33,8 +33,8 @@ app.configure('production', function(){
 
 // Routes
 app.get('/geo2zip/:loc', routes.geo2zip);
-app.get('/zip/:zip', routes.getZip);
 app.get('/zip/install', routes.installDb);
+app.get('/zip/:zip', routes.getZip);
 
 app.listen(3002);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

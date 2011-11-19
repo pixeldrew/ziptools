@@ -89,13 +89,13 @@ ZipProvider.prototype.getZipsByState = function(state, cb) {
   });
 };
 
-ZipProvider.prototype.save = function(zip, cb) {
+ZipProvider.prototype.save = function(zips, cb) {
   this.getCollection(function(err, col) {
     if (err) {
       if (cb) cb(err);
     } else {
-      col.insert(zip, function() {
-        if (cb) cb(null, zip);
+      col.insert(zips, function() {
+        if (cb) cb(null, zips);
       });
     }
   });
@@ -115,6 +115,16 @@ ZipProvider.prototype.remove = function(zip, cb) {
 
 ZipProvider.prototype.close = function() {
   this.db.close();
+};
+
+ZipProvider.prototype.drop = function() {
+  this.getCollection(function(err, col) {
+    if(err) {
+       
+    } else {
+       col.drop(); 
+    }
+  });
 };
 
 ZipProvider.prototype.ensureIndex = function(idxs) {

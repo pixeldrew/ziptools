@@ -12,12 +12,12 @@
 var Db = require('mongodb').Db,
     Connection = require('mongodb').Connection,
     Server = require('mongodb').Server,
-    BSON = require('mongodb').BSON,
-    ObjectID = require('mongodb').ObjectID;
+    ZipProvider;
 
-ZipProvider = function(host, port) {
+exports.ZipProvider = ZipProvider = function(host, port) {
   this.db = new Db('zips', new Server(host, port, {
-    auto_reconnect: true
+    auto_reconnect: true,
+    poolSize: 4
   }, {}));
   this.db.open(function() {});
 };
@@ -34,7 +34,7 @@ ZipProvider.prototype.getCollection = function(cb) {
 
 ZipProvider.prototype.getZipByGeo = function(loc, cb) {
   this.getCollection(function(err, col) {
-    if (err) {
+    if (err && cb) {
       cb(err);
     } else {
       col.findOne({
@@ -55,7 +55,7 @@ ZipProvider.prototype.getZipByGeo = function(loc, cb) {
 
 ZipProvider.prototype.getZip = function(zip, cb) {
   this.getCollection(function(err, col) {
-    if (err) {
+    if (err && cb) {
       cb(err);
     } else {
       col.findOne({
@@ -89,22 +89,24 @@ ZipProvider.prototype.getZipsByState = function(state, cb) {
   });
 };
 
-ZipProvider.prototype.save = function(zips, cb) {
+ZipProvider.prototype.insert = function(zips, cb) {
   this.getCollection(function(err, col) {
-    if (err) {
-      if (cb) cb(err);
+    if (err && cb) {
+      cb(err);
     } else {
-      col.insert(zips, function() {
-        if (cb) cb(null, zips);
-      });
+      if(cb) {
+        col.insert(zips, {safe:true}, cb); 
+      } else {
+        col.insert(zips);
+      }
     }
   });
 };
 
 ZipProvider.prototype.remove = function(zip, cb) {
   this.getCollection(function(err, col) {
-    if (err) {
-      if (cb) cb(err);
+    if (err && cb) {
+      cb(err);
     } else {
       col.remove({
         zip: zip
@@ -113,25 +115,24 @@ ZipProvider.prototype.remove = function(zip, cb) {
   });
 };
 
-ZipProvider.prototype.close = function() {
-  this.db.close();
-};
-
 ZipProvider.prototype.drop = function() {
   this.getCollection(function(err, col) {
-    if(err) {
-       
-    } else {
+    if(!err) {
        col.drop(); 
     }
   });
 };
 
-ZipProvider.prototype.ensureIndex = function(idxs) {
-  var db = this.db;
+ZipProvider.prototype.ensureIndex = function(idx,cb) {
   this.getCollection(function(err, col) {
     if (!err) {
-      col.ensureIndex(idxs, {background:true});
+      col.ensureIndex(idx, {background:true}, function(err, indexName) {
+        if(err) {
+          cb(err); 
+        } else {
+          cb(null, indexName);
+        }
+      });
     }
   });
 };

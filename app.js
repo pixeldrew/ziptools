@@ -9,9 +9,6 @@ var express = require('express'),
 
 var app = module.exports = express.createServer();
 
-var ZipProvider = require('./models/zipprovider-mongodb').ZipProvider;
-
-
 // Configuration
 
 app.configure(function(){

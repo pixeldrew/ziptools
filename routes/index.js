@@ -19,9 +19,12 @@ exports.geo2zip = function(req, res) {
 
     var elapsed = new Date().getTime() - start;
 
-    delete result._id;
-    res.json(result);
-
+    if(!err && result) {
+      delete result._id;
+      res.json(result);
+    } else {
+        res.json({errorStr: "not found", err : err} );
+    }
     console.log('geo2zip elapsed time ', elapsed, "(ms)");
 
   });
@@ -30,16 +33,19 @@ exports.geo2zip = function(req, res) {
 
 exports.getZip = function(req, res) {
 
-  console.log('getZip');
   var db = new ZipProvider('localhost', 27017),
       start = new Date().getTime();
 
   db.getZip(req.params.zip, function(err, result) {
     var elapsed = new Date().getTime() - start;
 
-    delete result._id;
-    res.json(result);
-
+    if(!err && result) {
+      delete result._id;
+      res.json(result);
+    } else {
+      res.json({errorStr: "not found", err : err} );
+    }
+    
     console.log('getZip elapsed time ', elapsed, '(ms)');
 
   });
@@ -48,9 +54,10 @@ exports.getZip = function(req, res) {
 exports.installDb = function(req, res) {
 
   var csv = require('csv'),
+      async = require('async'),
       db = new ZipProvider('localhost', 27017),
       zips = [];
-
+      
   csv().fromPath(__dirname + "/../db/zips.csv", {
     columns: true,
     trim: true
@@ -64,22 +71,31 @@ exports.installDb = function(req, res) {
     return data;
 
   }).on("data", function(data, index) {
-
-    if (index > 0) {
-      zips.push(data);
-    }
-
+    zips.push(data);
   }).on("end", function() {
 
     db.drop();
     
-    db.ensureIndex({"zip": 1}, function(err, indexName) {
-      db.ensureIndex({"loc": "2d"}, function(err, indexName) {
-        db.insert(zips);
-        res.render('install', {
+    async.series({
+      setZipIndex: function(cb){
+        db.ensureIndex({"zip": 1}, cb);
+      },
+      setSpatialIndex: function(cb){
+        db.ensureIndex({"loc": "2d"}, cb);
+      },
+      saveZipsToDB : function(cb) {
+        db.insert(zips, cb);
+      } 
+      
+    },
+    function(err, results) {
+      if(!err) {
+       res.render('install', {
           title: 'US zipcode db installed'
         });
-      });
+      }
     });
+    
   });
+  
 };

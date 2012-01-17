@@ -29,9 +29,9 @@ app.configure('production', function(){
 });
 
 // Routes
+app.get('/geo2zip/test', routes.test);
 app.get('/geo2zip/:loc', routes.geo2zip);
 app.get('/zip/install', routes.installDb);
-app.get('/zip/test', routes.test);
 app.get('/zip/:zip', routes.getZip);
 
 app.listen(3002);

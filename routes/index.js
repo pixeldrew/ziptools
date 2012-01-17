@@ -5,10 +5,8 @@
 var ZipProvider = require('./../models/zipprovider-mongodb').ZipProvider;
 
 exports.test = function(req, res) {
- res.render('test');
- 
-}
-
+  res.render('test', {title:"Test geo2zip API"});
+};
 
 exports.geo2zip = function(req, res) {
 
@@ -44,12 +42,15 @@ exports.getZip = function(req, res) {
 
   if(isNaN(parseInt(req.params.zip, 10))) {
     db.searchForZips(req.params.zip, function(err, result) {
+      var elapsed = new Date().getTime() - start;
+      
       if(!err && result) {
         delete result._id;
         res.json(result);
       } else {
         res.json({errorStr: "not found", err : err} );
       }
+      console.log('getZip elapsed time ', elapsed, "(ms)");
       
     });
   

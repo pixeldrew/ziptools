@@ -4,6 +4,12 @@
 
 var ZipProvider = require('./../models/zipprovider-mongodb').ZipProvider;
 
+exports.test = function(req, res) {
+ res.render('test');
+ 
+}
+
+
 exports.geo2zip = function(req, res) {
 
   var loc = req.params.loc.split(',');
@@ -36,19 +42,30 @@ exports.getZip = function(req, res) {
   var db = new ZipProvider('localhost', 27017),
       start = new Date().getTime();
 
-  db.getZip(req.params.zip, function(err, result) {
-    var elapsed = new Date().getTime() - start;
-
-    if(!err && result) {
-      delete result._id;
-      res.json(result);
-    } else {
-      res.json({errorStr: "not found", err : err} );
-    }
+  if(isNaN(parseInt(req.params.zip, 10))) {
+    db.searchForZips(req.params.zip, function(err, result) {
+      if(!err && result) {
+        delete result._id;
+        res.json(result);
+      } else {
+        res.json({errorStr: "not found", err : err} );
+      }
+      
+    });
+  
+  } else {
+    db.getZip(req.params.zip, function(err, result) {
+        
+      if(!err && result) {
+        delete result._id;
+        res.json(result);
+      } else {
+        res.json({errorStr: "not found", err : err} );
+      }
+  
+    });
     
-    console.log('getZip elapsed time ', elapsed, '(ms)');
-
-  });
+  }
 };
 
 exports.installDb = function(req, res) {
@@ -71,6 +88,13 @@ exports.installDb = function(req, res) {
     return data;
 
   }).on("data", function(data, index) {
+    
+    data.keywords = [data.stateAbbr.toLowerCase(), data.stateName.toLowerCase()];
+    
+    if(data.cityName) {
+      data.keywords = data.keywords.concat(data.cityName.toLowerCase().split(" "));
+    }
+    
     zips.push(data);
   }).on("end", function() {
 
@@ -82,6 +106,9 @@ exports.installDb = function(req, res) {
       },
       setSpatialIndex: function(cb){
         db.ensureIndex({"loc": "2d"}, cb);
+      },
+      setKeywordsIndex: function(cb) {
+        db.ensureIndex({"keywords" : 1}, cb);
       },
       saveZipsToDB : function(cb) {
         db.insert(zips, cb);

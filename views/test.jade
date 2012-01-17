@@ -1,0 +1,53 @@
+h1=title
+  
+div#output
+
+script
+
+  function output(msg) {
+    var output = $('#output').html();
+
+    $('#output').html(output + "<br/>" + msg);
+  }
+
+  function initTest(e) {
+    if (navigator.geolocation) {
+      output("Using navigator.geolocation (HTML5 Geolocation)");
+      navigator.geolocation.getCurrentPosition(onGeoLocate, useJSAPI);
+    } else {
+      useJSAPI();
+    }
+  }
+
+  function onGeoLocate(pos) {
+    var lat = position.coords.latitude, long = position.coords.longitude;
+
+    getZipCode(lat, long);
+  }
+
+  function getZipCode(lat,long) {
+    // note; long before lat
+    var url = '/geo2zip/' + long + ',' +lat;
+    $.ajax(url, {success: onGetZipCode});
+  }
+
+  function onGetZipCode(ret) {
+    output("Output From geo2zip: " + JSON.stringify(ret) );
+  }
+
+  function useJSAPI() {
+    var loc = google.loader.ClientLocation;
+
+    output("Using Google JSAPI Loader (IP Geolocation)");
+
+    if (loc != null) {
+      output("Your Location Is: " + google.loader.ClientLocation.address.city + ", " + google.loader.ClientLocation.address.region);
+      getZipCode(google.loader.ClientLocation.latitude, google.loader.ClientLocation.longitude);
+      
+    } else {
+      output("Your Location Was Not Detected By The Google JSAPI Loader");
+    }
+  }
+
+  document.onready = initTest;
+  

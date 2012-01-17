@@ -89,6 +89,28 @@ ZipProvider.prototype.getZipsByState = function(state, cb) {
   });
 };
 
+ZipProvider.prototype.searchForZips = function(searchTerm, cb) {
+  
+  searchTerm = searchTerm.toLowerCase();
+  
+  this.getCollection(function(err, col) {
+    if (err) {
+      cb(err);
+    } else {
+      col.find({
+        keywords: /searchTerm/
+      }, function(err, result) {
+        if (err) {
+          cb(err);
+        } else {
+          cb(null, result);
+        }
+      });
+    }
+  });
+  
+};
+
 ZipProvider.prototype.insert = function(zips, cb) {
   this.getCollection(function(err, col) {
     if (err && cb) {

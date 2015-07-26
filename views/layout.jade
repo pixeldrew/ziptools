@@ -1,11 +1,4 @@
-!!! 5
-//if lt IE 7
-  <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en">
-//if IE 7
-  <html class="no-js lt-ie9 lt-ie8" lang="en">
-//if IE 8
-  <html class="no-js lt-ie9" lang="en">
-//[if gt IE 8]><!
+doctype html
 html(class='no-js', lang='en')
   //<![endif]
   head
@@ -33,13 +26,3 @@ html(class='no-js', lang='en')
 
     script(defer, src='/js/plugins.js')
     script(defer, src='/js/script.js')
-
-
-    script
-      var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview'],['_trackPageLoadTime']];
-      (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-      g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-      s.parentNode.insertBefore(g,s)}(document,'script'));
-    //if lt IE 7
-      script(src='//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js', defer)
-      script(defer) window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})
